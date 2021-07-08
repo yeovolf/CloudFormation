@@ -1,0 +1,16 @@
+Resources:
+  MyEC2Instance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: t3.micro
+      ImageId: 'ami-0aeeebd8d2ab47354'
+      SubnetId: subnet-099221348fa124915 
+      SecurityGroupIds:
+        - sg-0149a4d45e71f24e4
+      # SecurityGroups :
+      #   - !Ref MySecurityGroup
+      Tags:
+        - Key: Name
+          Value: myOumouInstance
+
+# BUILD AN EC2 INSTANCE IN US-WEST-1

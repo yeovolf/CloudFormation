@@ -1,0 +1,77 @@
+Parameters:
+  SecurityGroupDescription:
+    Description: Security Group Description (Simple parameter)
+    Type: String
+  SecurityGroupPort:
+    Description: sbdksbdks - Simple Description of a Number Parameter, with MinValue and MaxValue
+    Type: Number
+    MinValue: 20 # out range 18
+    MaxValue: 65535
+  InstanceType:
+    Description: WebServer EC2 instance type (has default, AllowedValues)
+    Type: String
+    Default: t2.micro
+    AllowedValues: #possible values LIST
+      - t1.micro
+      - t2.nano
+      - t2.micro
+      - t2.small
+      - t3.micro
+    ConstraintDescription: must be a valid EC2 instance type.
+  DBPwd:
+    NoEcho: true
+    Description: The database admin account password (won't be echoed)
+    Type: String
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instances. Linked to AWS Parameter
+    Type: AWS::EC2::KeyPair::KeyName # Resource identifier
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+  SecurityGroupIngressCIDR:
+    Description: The IP address range that can be used to communicate to the EC2 instances
+    Type: String
+    MinLength: '9'
+    MaxLength: '18'
+    Default: 0.0.0.0/0 
+    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+    ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
+  MyVPC:
+    Description: VPC to operate in
+    Type: AWS::EC2::VPC::Id
+  MySubnetIDs:
+    Description: Subnet IDs that is a List of Subnet Id
+    Type: 'List<AWS::EC2::Subnet::Id>'
+  PublicSubnet1:
+    Type: String
+    Default: subnet-099221348fa124915
+  # DbSubnetIpBlocks:
+  #   Description: "Comma-delimited list of three CIDR blocks"
+  #   Type: CommaDelimitedList
+  #   Default: "10.0.48.0/24, 10.0.112.0/24, 10.0.176.0/24"
+
+Resources:
+  MyEC2Instance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      #we reference the InstanceType parameter
+      InstanceType: !Ref InstanceType # Reference to the instance type param
+      KeyName: !Ref KeyName
+      ImageId: 'ami-0aeeebd8d2ab47354'
+      # here we reference an internal CloudFormation resource
+      SubnetId: !Ref PublicSubnet1
+      # Link EC2 instance to security group (two resources)
+      SecurityGroupIds:
+        - !Ref MySecurityGroup # Referencing another resources!!!
+      Tags:
+        - Key: Name
+          Value: myInstance
+
+  MySecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: !Ref SecurityGroupDescription
+      SecurityGroupIngress:
+        - CidrIp: !Ref SecurityGroupIngressCIDR
+          FromPort: !Ref SecurityGroupPort
+          ToPort: !Ref SecurityGroupPort
+          IpProtocol: tcp
+      VpcId: !Ref MyVPC

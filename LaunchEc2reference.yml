@@ -1,0 +1,50 @@
+Parameters:
+  EnvironmentName:
+    Description: Environment Name
+    Type: String
+    AllowedValues: [development, production]
+    ConstraintDescription: must be development or production
+  EnvironmentToInstanceType: # Map Name
+    development:
+      instanceType: t2.micro
+    # we want a bigger instance type in production
+    production:
+      instanceType: t2.small
+
+
+Resources:
+  MyEC2Instance:
+    Type: 'AWS::EC2::Instance'
+    Properties: us-west-2
+      AvailabilityZone: 
+      ImageId: 'ami-0aeeebd8d2ab47354'
+      InstanceType: !FindInMap [
+          EnvironmentToInstanceType,
+          !Ref 'EnvironmentName',
+          instanceType,
+        ]
+      SecurityGroup:
+        -!ImportValue Network-Stack-SecurityGroupID
+      VPCId:
+        !ImportValue Network-Stack-VPCID
+      PublicSubnet:
+        !ImportValue Network-Stack-SubnetID
+      Tags:
+        - Key: Name
+          Value: myInstance
+  
+  MyEIP:
+  Type: AWS::EC2::EIP
+  Properties:
+    InstanceId: 
+      Fn::GetAtt:
+      - EIP
+      - AllocationId
+
+
+
+  
+
+
+
+  
